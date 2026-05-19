@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { BlockRule, HideAction, Platform, RuleScope, RuleType } from '../../../shared/types.js';
-import { PLATFORMS } from '../../../shared/types.js';
+import type { BlockRule, RuleType } from '../../../shared/types.js';
 
 interface Props {
   initial: BlockRule | null;
@@ -8,10 +7,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const DEFAULT_SCOPE: RuleScope = { titles: true, channels: true, comments: false, descriptions: false };
-const SCOPE_KEYS: (keyof RuleScope)[] = ['titles', 'channels', 'comments', 'descriptions'];
 const RULE_TYPES: RuleType[] = ['keyword', 'creator', 'phrase', 'regex'];
-const ACTIONS: HideAction[] = ['hide', 'collapse', 'blur'];
 
 function blankForm(): Partial<BlockRule> {
   return {
@@ -20,9 +16,6 @@ function blankForm(): Partial<BlockRule> {
     aliases: [],
     wholeWord: false,
     caseSensitive: false,
-    scope: { ...DEFAULT_SCOPE },
-    action: 'hide',
-    platforms: 'all',
     enabled: true,
   };
 }
@@ -52,23 +45,6 @@ export function RuleForm({ initial, onSave, onCancel }: Props) {
     });
   }
 
-  function setScope(key: keyof RuleScope, val: boolean) {
-    setForm((f) => ({ ...f, scope: { ...(f.scope ?? DEFAULT_SCOPE), [key]: val } }));
-  }
-
-  function togglePlatform(p: Platform) {
-    const current = form.platforms;
-    if (current === 'all') {
-      setForm((f) => ({ ...f, platforms: PLATFORMS.filter((x) => x !== p) }));
-    } else {
-      const arr = current as Platform[];
-      const next = arr.includes(p) ? arr.filter((x) => x !== p) : [...arr, p];
-      setForm((f) => ({ ...f, platforms: next.length === PLATFORMS.length ? 'all' : next }));
-    }
-  }
-
-  const isAllPlatforms = form.platforms === 'all';
-
   const value = (form.value ?? '').trim();
   const isShortAndSubstring = value.length > 0 && value.length < 4 && !form.wholeWord;
   const isRegex = form.type === 'regex';
@@ -96,9 +72,9 @@ export function RuleForm({ initial, onSave, onCancel }: Props) {
       enabled: form.enabled ?? true,
       caseSensitive: form.caseSensitive ?? false,
       wholeWord: form.wholeWord ?? false,
-      platforms: form.platforms ?? 'all',
-      scope: form.scope ?? { ...DEFAULT_SCOPE },
-      action: (form.action ?? 'hide') as HideAction,
+      platforms: 'all',
+      scope: { titles: true, channels: true, comments: true, descriptions: true },
+      action: 'hide',
       hits: initial?.hits ?? 0,
       createdAt: initial?.createdAt ?? Date.now(),
       updatedAt: Date.now(),
@@ -129,18 +105,10 @@ export function RuleForm({ initial, onSave, onCancel }: Props) {
         </div>
 
         {/* Type */}
-        <div className="form-field">
+        <div className="form-field span2">
           <label htmlFor="rf-type">Type</label>
           <select id="rf-type" value={form.type ?? 'keyword'} onChange={(e) => set('type', e.target.value as RuleType)}>
             {RULE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
-
-        {/* Action */}
-        <div className="form-field">
-          <label htmlFor="rf-action">Action</label>
-          <select id="rf-action" value={form.action ?? 'hide'} onChange={(e) => set('action', e.target.value as HideAction)}>
-            {ACTIONS.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
 
@@ -154,23 +122,6 @@ export function RuleForm({ initial, onSave, onCancel }: Props) {
             onChange={(e) => setAliasText(e.target.value)}
             placeholder="e.g. @KimK, Kimberly Kardashian"
           />
-        </div>
-
-        {/* Scope */}
-        <div className="form-field span2">
-          <label>Match in</label>
-          <div className="checkbox-group">
-            {SCOPE_KEYS.map((k) => (
-              <label key={k} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={form.scope?.[k] ?? DEFAULT_SCOPE[k]}
-                  onChange={(e) => setScope(k, e.target.checked)}
-                />
-                {k}
-              </label>
-            ))}
-          </div>
         </div>
 
         {/* Options */}
@@ -194,32 +145,6 @@ export function RuleForm({ initial, onSave, onCancel }: Props) {
               />
               Case sensitive
             </label>
-          </div>
-        </div>
-
-        {/* Platforms */}
-        <div className="form-field span2">
-          <label>Platforms</label>
-          <div className="checkbox-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={isAllPlatforms}
-                onChange={(e) => set('platforms', e.target.checked ? 'all' : [])}
-              />
-              All platforms
-            </label>
-            {!isAllPlatforms &&
-              PLATFORMS.map((p) => (
-                <label key={p} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={(form.platforms as Platform[]).includes(p)}
-                    onChange={() => togglePlatform(p)}
-                  />
-                  {p}
-                </label>
-              ))}
           </div>
         </div>
       </div>

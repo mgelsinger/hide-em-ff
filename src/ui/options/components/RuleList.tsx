@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { BlockRule, RuleScope } from '../../../shared/types.js';
+import type { BlockRule } from '../../../shared/types.js';
 
 interface Props {
   rules: BlockRule[];
@@ -7,13 +7,6 @@ interface Props {
   onDelete: (id: string) => void;
   onToggle: (id: string, enabled: boolean) => void;
 }
-
-const SCOPE_ABBR: Record<keyof RuleScope, string> = {
-  titles: 'T',
-  channels: 'C',
-  comments: 'CM',
-  descriptions: 'D',
-};
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -38,10 +31,6 @@ function RuleItem({
 }) {
   const [confirming, setConfirming] = useState(false);
 
-  const activeScopes = (Object.keys(rule.scope) as (keyof RuleScope)[]).filter(
-    (k) => rule.scope[k],
-  );
-
   if (confirming) {
     return (
       <li className="rule-item">
@@ -61,11 +50,6 @@ function RuleItem({
         {rule.aliases.length > 0 && (
           <span className="rule-aliases">+ {rule.aliases.length} alias{rule.aliases.length !== 1 ? 'es' : ''}</span>
         )}
-      </span>
-      <span className="rule-scope-tags">
-        {activeScopes.map((s) => (
-          <span key={s} className="scope-tag" title={s}>{SCOPE_ABBR[s]}</span>
-        ))}
       </span>
       <span className="rule-actions">
         <button className="btn btn-ghost btn-sm" title="Edit" onClick={onEdit}>✏️</button>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" shape-rendering="crispEdges">
+  <!-- Rounded-square background -->
+  <rect x="0" y="0" width="128" height="128" rx="22" ry="22" fill="#1c1c1e"/>
+
+  <!-- Three redaction bars, varying length, evoking censored text. -->
+  <!-- Bars are intentionally chunky so they remain legible at 16x16. -->
+  <rect x="22" y="38" width="84" height="14" rx="3" ry="3" fill="#f5f5f5"/>
+  <rect x="22" y="58" width="68" height="14" rx="3" ry="3" fill="#f5f5f5"/>
+  <rect x="22" y="78" width="52" height="14" rx="3" ry="3" fill="#f5f5f5"/>
+</svg>

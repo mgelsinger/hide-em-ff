@@ -5,7 +5,7 @@ import { crx, defineManifest } from '@crxjs/vite-plugin';
 const manifest = defineManifest({
   manifest_version: 3,
   name: 'hide-em',
-  version: '0.1.0',
+  version: '1.0.0',
   description: "Personal attention filter — hides content you don't want to see.",
   permissions: ['storage'],
   host_permissions: ['<all_urls>'],
