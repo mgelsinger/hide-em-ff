@@ -5,6 +5,8 @@ dist/
 .vite/
 .vscode/
 .idea/
+.claude/
+hide-em-*.zip
 
 # Private project notes — kept locally, not published
 CLAUDE.md

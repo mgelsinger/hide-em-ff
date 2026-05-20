@@ -22,7 +22,11 @@ const manifest = defineManifest({
     },
   ],
   options_page: 'src/ui/options/index.html',
-  icons: {},
+  icons: {
+    16: 'icons/icon-16.png',
+    48: 'icons/icon-48.png',
+    128: 'icons/icon-128.png',
+  },
 });
 
 export default defineConfig({
