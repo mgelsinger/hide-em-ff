@@ -1,34 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { crx, defineManifest } from '@crxjs/vite-plugin';
+import { fileURLToPath } from 'node:url';
 
-const manifest = defineManifest({
-  manifest_version: 3,
-  name: 'hide-em',
-  version: '1.0.0',
-  description: "Personal attention filter — hides content you don't want to see.",
-  permissions: ['storage'],
-  host_permissions: ['<all_urls>'],
-  background: {
-    service_worker: 'src/background/service-worker.ts',
-    type: 'module',
-  },
-  content_scripts: [
-    {
-      matches: ['<all_urls>'],
-      js: ['src/content/universal-scanner.ts'],
-      run_at: 'document_idle',
-      all_frames: false,
-    },
-  ],
-  options_page: 'src/ui/options/index.html',
-  icons: {
-    16: 'icons/icon-16.png',
-    48: 'icons/icon-48.png',
-    128: 'icons/icon-128.png',
-  },
-});
+// Options-page build. Emits dist/index.html + assets, and copies public/
+// (manifest.json + icons) into dist/.
+//
+// Content + background scripts are built separately by vite.scripts.config.ts
+// because MV3 content scripts must be classic (IIFE) bundles, and rollup only
+// supports IIFE output for single-chunk builds.
 
 export default defineConfig({
-  plugins: [react(), crx({ manifest })],
+  plugins: [react()],
+  root: fileURLToPath(new URL('./src/ui/options', import.meta.url)),
+  publicDir: fileURLToPath(new URL('./public', import.meta.url)),
+  build: {
+    outDir: fileURLToPath(new URL('./dist', import.meta.url)),
+    emptyOutDir: true,
+  },
 });

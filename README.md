@@ -4,7 +4,7 @@ A personal attention filter for the web. You add names, keywords, or phrases. Ma
 
 ## What it is
 
-A Manifest V3 Chromium browser extension (Chrome, Brave, Edge, etc.) that runs a single universal content script on every page you load. The script walks text nodes, tests each against your blocklist, and on a match hides the nearest semantic card-like ancestor — `<article>`, `<li>`, ARIA `role="article"` / `role="listitem"`, or a custom element matching `*-RENDERER` / `*-CARD` (which catches YouTube tiles, Reddit cards, etc.).
+A Manifest V3 Firefox extension (this is the Firefox fork — Gecko 115+) that runs a single universal content script on every page you load. The script walks text nodes, tests each against your blocklist, and on a match hides the nearest semantic card-like ancestor — `<article>`, `<li>`, ARIA `role="article"` / `role="listitem"`, or a custom element matching `*-RENDERER` / `*-CARD` (which catches YouTube tiles, Reddit cards, etc.).
 
 The rules engine is platform-agnostic. There is no site-specific code anywhere in the codebase. Adding a new site is zero work.
 
@@ -22,23 +22,36 @@ See the "Non-goals" section below for the long form.
 - **Engine:** stable, 38 unit tests pass.
 - **Scanner:** stable on YouTube, Reddit, generic article sites. Hides via `display: none` on the matched card.
 - **Options page:** add/edit/delete rules, JSON import/export, debug toggle.
-- **Popup:** not built yet.
-- **Icons:** not designed yet — Chrome shows a generic puzzle icon.
-- **Web Store:** not submitted. Currently distributed only as an unpacked extension.
+- **Toolbar button:** opens the options page in one click (also bound to **Ctrl+Shift+H** / **Cmd+Shift+H**).
+- **AMO:** submission in flight — listing not live yet. Use the build-from-source path below until then.
 
-## Install (unpacked, for personal use)
+## Install
 
-1. Clone this repo and build:
-   ```sh
-   npm install
-   npm run build
-   ```
-2. Open `chrome://extensions` (or `brave://extensions`, `edge://extensions`).
-3. Toggle **Developer mode** on.
-4. Click **Load unpacked** and select the `dist/` folder.
-5. Click the extension's options entry (right-click the extension icon → **Options**) and add your first rule.
+### Option A — from AMO _(once the listing is live)_
+
+The Firefox add-on review queue takes a few days. Once approved, the extension will be installable in one click from its AMO page (link will be added here when available).
+
+### Option B — build from source _(works today)_
+
+You'll need Node.js 18+ and a recent Firefox (115 or newer).
+
+```sh
+git clone https://github.com/mgelsinger/hide-em-ff.git
+cd hide-em-ff
+npm install
+npm run build
+```
+
+Then load the built extension into Firefox:
+
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Click **Load Temporary Add-on…** and select `dist/manifest.json`.
+3. **Grant host permissions:** click the puzzle icon in the toolbar → find hide-em → choose **Always Allow on All Sites** (or per-site as you visit them). Firefox MV3 makes `<all_urls>` opt-in, so the content script won't run until you do this.
+4. Click the hide-em toolbar icon (or press **Ctrl+Shift+H** / **Cmd+Shift+H**) to open the options page and add your first rule.
 
 The extension takes effect immediately on the next page load. Existing tabs need a refresh.
+
+> **Note — temporary add-ons unload on Firefox restart.** Firefox Release/Beta requires extensions to be signed by Mozilla for permanent installation, which is what AMO does. Until the AMO listing is live, you'll need to repeat steps 1–2 after each browser restart, or use Firefox Developer Edition / Nightly with `xpinstall.signatures.required = false` in `about:config` to install the unsigned `.xpi` from `npm run package` permanently.
 
 ## Usage
 
@@ -95,13 +108,16 @@ It also self-terminates if any single drain exceeds 1s or cumulative scan time e
 
 ```sh
 npm install
-npm run dev         # vite build --watch — rebuilds dist/ on file change
-npm run build       # one-shot production build
-npm run test        # vitest run — engine + shared utilities only
-npm run typecheck   # tsc --noEmit
+npm run dev            # builds scripts once, then watches the options page
+npm run build          # one-shot production build (options + background + content)
+npm run test           # vitest run — engine + shared utilities only
+npm run typecheck      # tsc --noEmit
+npm run lint:web-ext   # web-ext lint against dist/
+npm run start:firefox  # launch Firefox with the extension loaded (auto-reloads on dist/ changes)
+npm run package        # build a signed-ready .zip in web-ext-artifacts/
 ```
 
-Reload the extension in `chrome://extensions` after each build (the reload icon on the card).
+If you're using the **temporary add-on** flow, reload the extension in `about:debugging` after each build (the **Reload** button on the card). `npm run start:firefox` handles the reload automatically while it's running.
 
 ### Repository layout
 
@@ -115,7 +131,11 @@ src/
   ui/
     options/              # React app: full blocklist management, import/export
   shared/                 # storage wrapper, shared types
-vite.config.ts            # manifest is defined inline here
+public/
+  manifest.json           # static Firefox MV3 manifest, copied verbatim to dist/
+  icons/                  # toolbar / store icons, copied verbatim to dist/
+vite.config.ts            # options-page build
+vite.scripts.config.ts    # content + background IIFE bundles (run twice: ENTRY=background, ENTRY=content)
 ```
 
 ### Architecture rules
@@ -140,7 +160,7 @@ Explicit non-goals — these will not be added without an explicit request and s
 - No image or thumbnail OCR
 - No face detection
 - No AI or semantic matching of any kind
-- No backend, telemetry, or cloud sync beyond `chrome.storage.sync`
+- No backend, telemetry, or cloud sync beyond `browser.storage.sync`
 - No community blocklist sharing
 - No filtering of content you yourself authored
 - No "auto-suggest blocks" — you add rules, the extension applies them
@@ -148,13 +168,13 @@ Explicit non-goals — these will not be added without an explicit request and s
 
 ## Tech stack
 
-- Manifest V3, Chromium-based browsers
+- Manifest V3, Firefox / Gecko 115+
 - TypeScript, strict mode
 - Vanilla DOM in the content script (no framework)
 - React for the options page (off the hot path)
-- `chrome.storage.sync` for rules, `chrome.storage.local` for hit counters
-- Bundler: Vite + `@crxjs/vite-plugin`
-- Tests: Vitest
+- `browser.storage.sync` for rules, `browser.storage.local` for hit counters (via [`webextension-polyfill`](https://github.com/mozilla/webextension-polyfill))
+- Bundler: Vite (no extension-specific plugin; static `manifest.json` + IIFE script bundles)
+- Tests: Vitest; lint via `web-ext lint`
 
 ## License
 

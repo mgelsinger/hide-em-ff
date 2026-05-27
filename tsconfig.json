@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["chrome"]
+    "types": ["webextension-polyfill"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts", "vite.scripts.config.ts"]
 }

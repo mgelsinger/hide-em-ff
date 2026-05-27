@@ -7,6 +7,7 @@ dist/
 .idea/
 .claude/
 hide-em-*.zip
+web-ext-artifacts/
 
 # Private project notes — kept locally, not published
 CLAUDE.md
