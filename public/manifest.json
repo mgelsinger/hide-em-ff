@@ -5,7 +5,7 @@
   "description": "Personal attention filter — hides content you don't want to see.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "mgelsinger19@gmail.com",
+      "id": "hide-em-ff@glsngr.xyz",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
         "required": ["none"]
